@@ -10,5 +10,7 @@ POSIX coreutils (GNU coretils, busybox, toybox, lobase)
 libarchive (bsdtar and bsdcpio)
 brotli
 curl
+systemd-tmpfiles or opentmpfiles
 libselinux (optional, for selinuxenabled)
+policycoreutils (optional, for restorecon)
 ```
