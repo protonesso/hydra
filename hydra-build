@@ -513,12 +513,12 @@ compress_package() {
 
 			[ -n "$makedirs" ] && {
 				for i in "${makedirs[@]}"; do
-					echo "d! $i" >> usr/lib/tmpfiles.d/setup-${name}.conf
+					echo "d! /${i}" >> usr/lib/tmpfiles.d/setup-${name}.conf
 				done
 			}
 			[ -n "$makelinks" ] && {
 				for i in "${makelinks[@]}"; do
-					echo "L! $i" >> usr/lib/tmpfiles.d/setup-${name}.conf
+					echo "L! /${i}" >> usr/lib/tmpfiles.d/setup-${name}.conf
 				done
 			}
 
