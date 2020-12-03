@@ -137,8 +137,3 @@ bool hydra_extract(const char *file, const char *path) {
 
 	return true;
 }
-
-int main() {
-	hydra_brotlidec("/home/yuyu/hydra-skeleton-201203+r1+x86_64.br");
-	return 0;
-}
