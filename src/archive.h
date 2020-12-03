@@ -12,3 +12,4 @@
 bool hydra_extract(const char *file, const char *path);
 int hydra_copydata(struct archive *ar, struct archive *aw);
 void *hydra_brotlidec(const char *file);
+void hydra_list(const char *file);

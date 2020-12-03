@@ -111,7 +111,7 @@ bool hydra_extract(const char *file, const char *path) {
 
 	r = archive_read_open_memory(a, hydra_brotlidec(file), 16384);
 	if (r != ARCHIVE_OK) {
-		fprintf(stderr, "Failed to extract archive: %s\n", archive_error_string(a));
+		fprintf(stderr, "Failed to read archive: %s\n", archive_error_string(a));
 		return false;
 	}
 
@@ -145,4 +145,29 @@ bool hydra_extract(const char *file, const char *path) {
 	archive_write_free(ext);
 
 	return true;
+}
+
+void hydra_list(const char *file) {
+	struct archive *a = archive_read_new();
+	struct archive_entry *entry;
+	int r;
+
+	archive_read_support_format_cpio(a);
+	r = archive_read_open_memory(a, hydra_brotlidec(file), 16384);
+	if (r != ARCHIVE_OK) {
+		fprintf(stderr, "Failed to read archive: %s\n", archive_error_string(a));
+		exit(1);
+	}
+
+	while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
+		printf("%s\n",archive_entry_pathname(entry));
+		archive_read_data_skip(a);
+	}
+
+	r = archive_read_free(a);
+	if (r != ARCHIVE_OK) {
+		exit(1);
+	}
+
+	exit(0);
 }
