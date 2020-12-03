@@ -58,7 +58,7 @@ bool hydra_brotlidec(const char *file) {
 
 	state = BrotliDecoderCreateInstance(NULL, NULL, NULL);
 	if (!state) {
-		fprintf(stderr, "Failed to extract brotli archive 1 \n");
+		fprintf(stderr, "Failed to create Brotli instance\n");
 		return false;
 	}
 
@@ -67,7 +67,7 @@ bool hydra_brotlidec(const char *file) {
 				&avail_out, &next_out,
 				NULL);
 	if (!result) {
-		fprintf(stderr, "Failed to extract brotli archive 2 \n");
+		fprintf(stderr, "Failed to decode Brotli archive\n");
 		return false;
 	}
 
