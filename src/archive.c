@@ -22,7 +22,7 @@ int hydra_copydata(struct archive *ar, struct archive *aw) {
 void *hydra_brotlidec(const char *file) {
 	FILE *fp = fopen(file, "rb");
 	if (!fp) {
-		fprintf(stderr, "Failed to open file.\n");
+		fprintf(stderr, "Failed to open archive\n");
 		exit(1);
 	}
 
@@ -40,7 +40,7 @@ void *hydra_brotlidec(const char *file) {
 	char buf[CHAR_MAX];
 
 	if (!(fread(buf, 1, fsize, fp))) {
-		fprintf(stderr, "Failed to read file.\n");
+		fprintf(stderr, "Failed to extract archive\n");
 		exit(1);
 	}
 
