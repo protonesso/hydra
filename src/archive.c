@@ -19,7 +19,7 @@ int hydra_copydata(struct archive *ar, struct archive *aw) {
 	}
 }
 
-bool hydra_extract_brotli(const char *file) {
+bool hydra_brotlidec(const char *file) {
 	FILE *fp = fopen(file, "rb");
 	if (!fp) {
 		fprintf(stderr, "Failed to open file.\n");
@@ -94,7 +94,7 @@ bool hydra_extract_brotli(const char *file) {
 	return true;
 }
 
-bool hydra_extract_cpio(const char *file, const char *path) {
+bool hydra_extract(const char *file, const char *path) {
 	struct archive *a = archive_read_new();
 	struct archive *ext = archive_write_disk_new();
 	struct archive_entry *entry;
