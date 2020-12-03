@@ -153,6 +153,7 @@ void hydra_list(const char *file) {
 	int r;
 
 	archive_read_support_format_cpio(a);
+
 	r = archive_read_open_memory(a, hydra_brotlidec(file), 16384);
 	if (r != ARCHIVE_OK) {
 		fprintf(stderr, "Failed to read archive: %s\n", archive_error_string(a));
@@ -160,7 +161,7 @@ void hydra_list(const char *file) {
 	}
 
 	while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
-		printf("%s\n",archive_entry_pathname(entry));
+		printf("%s\n", archive_entry_pathname(entry));
 		archive_read_data_skip(a);
 	}
 
