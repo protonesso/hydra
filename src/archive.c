@@ -36,7 +36,7 @@ bool hydra_brotlidec(const char *file) {
 		return false;
 	}
 
-	if (!(fread(buf, 1, fsize, fp))) {
+	if (!(fread(buf, fsize, 1, fp))) {
 		fprintf(stderr, "Failed to read file.\n");
 		return false;
 	}
@@ -45,9 +45,6 @@ bool hydra_brotlidec(const char *file) {
 	const void *inbuf = buf;
 	size_t outbuf_size = sizeof(outbuf);
 	size_t inbuf_size = sizeof(buf);
-
-	fclose(fp);
-	free(buf);
 
 	BrotliDecoderState *state;
 	BrotliDecoderResult result;
@@ -71,7 +68,24 @@ bool hydra_brotlidec(const char *file) {
 		return false;
 	}
 
+	switch (result) {
+		case BROTLI_DECODER_RESULT_ERROR:
+			printf("error\n");
+			break;
+		case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
+			printf("more input\n");
+			break;
+		case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
+			printf("more out\n");
+			break;
+		case BROTLI_DECODER_RESULT_SUCCESS:
+			printf("yay\n");
+			break;
+	}
+
 	BrotliDecoderIsFinished(state);
+	fclose(fp);
+	free(buf);
 
 	return true;
 }
@@ -125,9 +139,4 @@ bool hydra_extract(const char *file, const char *path) {
 	archive_write_free(ext);
 
 	return true;
-}
-
-int main() {
-	hydra_brotlidec("/home/yuyu/junk/brotli");
-	return 0;
 }
