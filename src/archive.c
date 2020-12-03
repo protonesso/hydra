@@ -19,11 +19,11 @@ int hydra_copydata(struct archive *ar, struct archive *aw) {
 	}
 }
 
-bool hydra_brotlidec(const char *file) {
+void *hydra_brotlidec(const char *file) {
 	FILE *fp = fopen(file, "rb");
 	if (!fp) {
 		fprintf(stderr, "Failed to open file.\n");
-		return false;
+		exit(1);
 	}
 
 	fseek(fp, 0 , SEEK_END);
@@ -34,14 +34,14 @@ bool hydra_brotlidec(const char *file) {
 	char *buf = malloc(kFileBufferSize * fsize);
 	if (!buf) {
 		fprintf(stderr, "Failed to allocate memory for file.\n");
-		return false;
+		exit(1);
 	}
 #endif
 	char buf[CHAR_MAX];
 
 	if (!(fread(buf, 1, fsize, fp))) {
 		fprintf(stderr, "Failed to read file.\n");
-		return false;
+		exit(1);
 	}
 
 	uint8_t outbuf[BUFSIZ];
@@ -59,7 +59,7 @@ bool hydra_brotlidec(const char *file) {
 	state = BrotliDecoderCreateInstance(NULL, NULL, NULL);
 	if (!state) {
 		fprintf(stderr, "Failed to create Brotli instance\n");
-		return false;
+		exit(1);
 	}
 
 	result = BrotliDecoderDecompressStream(state,
@@ -85,13 +85,15 @@ bool hydra_brotlidec(const char *file) {
 
 	if (err != NULL) {
 		fprintf(stderr, "Failed to decocde Brotli archive: %s\n", err);
-		return false;
+		exit(1);
 	}
 
 	fclose(fp);
 	//free(buf);
 
-	return true;
+	void *ptr = outbuf;
+
+	return ptr;
 }
 
 bool hydra_extract(const char *file, const char *path) {
@@ -107,7 +109,7 @@ bool hydra_extract(const char *file, const char *path) {
 	archive_write_disk_set_options(ext, flags);
 	archive_read_support_format_cpio(a);
 
-	r = archive_read_open_filename(a, file, 16384);
+	r = archive_read_open_memory(a, hydra_brotlidec(file), 16384);
 	if (r != ARCHIVE_OK) {
 		fprintf(stderr, "Failed to extract archive: %s\n", archive_error_string(a));
 		return false;
