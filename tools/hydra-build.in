@@ -220,8 +220,6 @@ download_sources() {
 				filefetch "$f"
 			fi
 		done
-	else
-		warn "No sources for this package. Skipping."
 	fi
 }
 
@@ -294,8 +292,6 @@ extract_sources() {
 				cp "$src" "$SRC" || die "Failed to copy $(basename $src) into sources directory"
 			fi
 		done
-	else
-		warn "No sources for this package. Skipping."
 	fi
 }
 
