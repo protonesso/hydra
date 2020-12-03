@@ -36,7 +36,10 @@ bool hydra_brotlidec(const char *file) {
 		return false;
 	}
 
-	fread(buf, 1, fsize, fp);
+	if (!(fread(buf, fsize, 1, fp))) {
+		fprintf(stderr, "Failed to read file.\n");
+		return false;
+	}
 
 	uint8_t outbuf[BUFSIZ];
 	const void *inbuf = buf;
