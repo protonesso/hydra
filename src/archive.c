@@ -1,5 +1,7 @@
 #include "archive.h"
 
+#include <limits.h>
+
 int hydra_copydata(struct archive *ar, struct archive *aw) {
 	int r;
 	const void *buff;
@@ -30,13 +32,16 @@ bool hydra_brotlidec(const char *file) {
 	size_t fsize = ftell(fp);
 	rewind(fp);
 
-	char *buf = (char *)malloc(sizeof(char) * fsize);
+#if 0
+	char *buf = malloc(kFileBufferSize * fsize);
 	if (!buf) {
 		fprintf(stderr, "Failed to allocate memory for file.\n");
 		return false;
 	}
+#endif
+	char buf[CHAR_MAX];
 
-	if (!(fread(buf, fsize, 1, fp))) {
+	if (!(fread(buf, 1, fsize, fp))) {
 		fprintf(stderr, "Failed to read file.\n");
 		return false;
 	}
@@ -63,29 +68,30 @@ bool hydra_brotlidec(const char *file) {
 				&avail_in, &next_in,
 				&avail_out, &next_out,
 				NULL);
-	if (!result) {
-		fprintf(stderr, "Failed to decode Brotli archive\n");
+
+	char *err = NULL;
+	switch (result) {
+		case BROTLI_DECODER_RESULT_ERROR:
+			err = "not recognized";
+			break;
+		case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
+			err = "need more input data";
+			break;
+		case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
+			err = "need more output data";
+			break;
+		case BROTLI_DECODER_RESULT_SUCCESS:
+			BrotliDecoderIsFinished(state);
+			break;
+	}
+
+	if (err != NULL) {
+		fprintf(stderr, "Failed to decocde Brotli archive: %s\n", err);
 		return false;
 	}
 
-	switch (result) {
-		case BROTLI_DECODER_RESULT_ERROR:
-			printf("error\n");
-			break;
-		case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
-			printf("more input\n");
-			break;
-		case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
-			printf("more out\n");
-			break;
-		case BROTLI_DECODER_RESULT_SUCCESS:
-			printf("success\n");
-			break;
-	}
-
-	BrotliDecoderIsFinished(state);
 	fclose(fp);
-	free(buf);
+	//free(buf);
 
 	return true;
 }
