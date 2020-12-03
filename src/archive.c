@@ -36,10 +36,7 @@ bool hydra_brotlidec(const char *file) {
 		return false;
 	}
 
-	if (!(fread(buf, fsize, 1, fp))) {
-		fprintf(stderr, "Failed to read file.\n");
-		return false;
-	}
+	fread(buf, 1, fsize, fp);
 
 	uint8_t outbuf[BUFSIZ];
 	const void *inbuf = buf;
@@ -79,7 +76,7 @@ bool hydra_brotlidec(const char *file) {
 			printf("more out\n");
 			break;
 		case BROTLI_DECODER_RESULT_SUCCESS:
-			printf("yay\n");
+			printf("success\n");
 			break;
 	}
 
@@ -139,4 +136,9 @@ bool hydra_extract(const char *file, const char *path) {
 	archive_write_free(ext);
 
 	return true;
+}
+
+int main() {
+	hydra_brotlidec("/home/yuyu/hydra-skeleton-201203+r1+x86_64.br");
+	return 0;
 }
