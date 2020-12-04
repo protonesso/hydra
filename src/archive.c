@@ -26,28 +26,25 @@ void *hydra_brotlidec(const char *file) {
 		exit(1);
 	}
 
-	fseek(fp, 0 , SEEK_END);
+	fseek(fp, 0, SEEK_END);
 	size_t fsize = ftell(fp);
 	rewind(fp);
 
-#if 0
-	char *buf = malloc(kFileBufferSize * fsize);
+	char *buf = malloc(sizeof(char) * fsize);
 	if (!buf) {
 		fprintf(stderr, "Failed to allocate memory for file.\n");
 		exit(1);
 	}
-#endif
-	char buf[CHAR_MAX];
 
 	if (!(fread(buf, 1, fsize, fp))) {
-		fprintf(stderr, "Failed to extract archive\n");
+		fprintf(stderr, "Failed to read archive\n");
 		exit(1);
 	}
 
 	uint8_t outbuf[BUFSIZ];
 	const void *inbuf = buf;
 	size_t outbuf_size = sizeof(outbuf);
-	size_t inbuf_size = sizeof(buf);
+	size_t inbuf_size = sizeof(char) * fsize;
 
 	BrotliDecoderState *state;
 	BrotliDecoderResult result;
@@ -89,7 +86,7 @@ void *hydra_brotlidec(const char *file) {
 	}
 
 	fclose(fp);
-	//free(buf);
+	free(buf);
 
 	void *ptr = outbuf;
 
