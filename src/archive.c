@@ -1,5 +1,13 @@
 #include "archive.h"
 
+void hydra_setup_decompress(struct archive *ar) {
+	archive_read_support_filter_xz(ar);
+	archive_read_support_filter_lz4(ar);
+	archive_read_support_filter_zstd(ar);
+	archive_read_support_filter_rpm(ar);
+	archive_read_support_format_cpio(ar);
+}
+
 int hydra_copydata(struct archive *ar, struct archive *aw) {
 	int r;
 	const void *buff;
@@ -19,80 +27,6 @@ int hydra_copydata(struct archive *ar, struct archive *aw) {
 	}
 }
 
-void *hydra_brotlidec(const char *file) {
-	FILE *fp = fopen(file, "rb");
-	if (!fp) {
-		fprintf(stderr, "Failed to open archive\n");
-		exit(1);
-	}
-
-	fseek(fp, 0, SEEK_END);
-	size_t fsize = ftell(fp);
-	rewind(fp);
-
-	char *buf = malloc(sizeof(char) * fsize);
-	if (!buf) {
-		fprintf(stderr, "Failed to allocate memory for file.\n");
-		exit(1);
-	}
-
-	if (!(fread(buf, 1, fsize, fp))) {
-		fprintf(stderr, "Failed to read archive\n");
-		exit(1);
-	}
-
-	uint8_t outbuf[BUFSIZ];
-	const void *inbuf = buf;
-	size_t outbuf_size = sizeof(outbuf);
-	size_t inbuf_size = sizeof(char) * fsize;
-
-	BrotliDecoderState *state;
-	BrotliDecoderResult result;
-	size_t avail_in = inbuf_size;
-	const uint8_t *next_in = inbuf;
-	size_t avail_out = outbuf_size;
-	uint8_t *next_out = outbuf;
-
-	state = BrotliDecoderCreateInstance(NULL, NULL, NULL);
-	if (!state) {
-		fprintf(stderr, "Failed to create Brotli instance\n");
-		exit(1);
-	}
-
-	result = BrotliDecoderDecompressStream(state,
-				&avail_in, &next_in,
-				&avail_out, &next_out,
-				NULL);
-
-	char *err = NULL;
-	switch (result) {
-		case BROTLI_DECODER_RESULT_ERROR:
-			err = "not recognized";
-			break;
-		case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
-			err = "need more input data";
-			break;
-		case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
-			err = "need more output data";
-			break;
-		case BROTLI_DECODER_RESULT_SUCCESS:
-			BrotliDecoderIsFinished(state);
-			break;
-	}
-
-	if (err != NULL) {
-		fprintf(stderr, "Failed to decocde Brotli archive: %s\n", err);
-		exit(1);
-	}
-
-	fclose(fp);
-	free(buf);
-
-	void *ptr = outbuf;
-
-	return ptr;
-}
-
 bool hydra_extract(const char *file, const char *path) {
 	struct archive *a = archive_read_new();
 	struct archive *ext = archive_write_disk_new();
@@ -104,9 +38,9 @@ bool hydra_extract(const char *file, const char *path) {
 	flags += ARCHIVE_EXTRACT_SECURE_SYMLINKS | ARCHIVE_EXTRACT_SECURE_NODOTDOT;
 
 	archive_write_disk_set_options(ext, flags);
-	archive_read_support_format_cpio(a);
+	hydra_setup_decompress(a);
 
-	r = archive_read_open_memory(a, hydra_brotlidec(file), 16384);
+	r = archive_read_open_filename(a, file, 16384);
 	if (r != ARCHIVE_OK) {
 		fprintf(stderr, "Failed to read archive: %s\n", archive_error_string(a));
 		return false;
@@ -149,9 +83,9 @@ void hydra_list(const char *file) {
 	struct archive_entry *entry;
 	int r;
 
-	archive_read_support_format_cpio(a);
+	hydra_setup_decompress(a);
 
-	r = archive_read_open_memory(a, hydra_brotlidec(file), 16384);
+	r = archive_read_open_filename(a, file, 16384);
 	if (r != ARCHIVE_OK) {
 		fprintf(stderr, "Failed to read archive: %s\n", archive_error_string(a));
 		exit(1);
